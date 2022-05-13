@@ -1,13 +1,17 @@
 package com.example.demo.controle;
 
+import com.example.demo.entidades.Livro;
 import com.example.demo.respositorio.LivroRepositorio;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Carrinho {
 
@@ -16,51 +20,33 @@ public class Carrinho {
 
         var idProduto = request.getParameter("id");
 
-        var produto = LivroRepositorio.listarProdutosPorId(Integer.parseInt(idProduto));
+        var livro = LivroRepositorio.listarProdutosPorId(Integer.parseInt(idProduto));
 
-        HttpSession session = request.getSession(false);
-        boolean achouCarrinho = false;
+        HttpSession session = request.getSession();
 
-
-        if ( session != null){
-            String usuarioSession = (String) session.getAttribute("usuario");
-            String emailSession = (String) session.getAttribute("email");
-            String tipoSession = (String) session.getAttribute("tipo");
-            if (tipoSession == "cliente"){
-                response.sendRedirect("http://localhost:8080/usuario/menucliente");
-            } else {
-                response.sendRedirect("http://localhost:8080/usuario/menulojista");
+        if (livro != null){
+            if (session.getAttribute("carrinho") != null){
+                session.setAttribute("id", livro.getIdlivro());
+                session.setAttribute("nome", livro.getNome());
+                session.setAttribute("autor", livro.getAutor());
+                session.setAttribute("livro", livro.getLivro());
+                session.setAttribute("ano", livro.getAno());
+                session.setAttribute("numero_edicao", livro.getNumero_edicao());
+                session.setAttribute("paginas", livro.getPaginas());
+                session.setMaxInactiveInterval(60*1);
             }
+            HttpSession s = request.getSession(true);
+            session.setAttribute("id", livro.getIdlivro());
+            session.setAttribute("nome", livro.getNome());
+            session.setAttribute("autor", livro.getAutor());
+            session.setAttribute("livro", livro.getLivro());
+            session.setAttribute("ano", livro.getAno());
+            session.setAttribute("numero_edicao", livro.getNumero_edicao());
+            session.setAttribute("paginas", livro.getPaginas());
+            session.setMaxInactiveInterval(60*1);
         }
 
-        if (requestCookies != null) {
-            for (var c : requestCookies) {
-                if (c.getName().equals("carrinho")) {
-                    achouCarrinho = true;
-                    carrinho = c;
-                    break;
-                }
-            }
-        }
-
-        Produto produtoEscolhido = null;
-
-        if (produto != null) {
-            produtoEscolhido = produto;
-            if (achouCarrinho) {
-                String value = carrinho.getValue();
-                System.out.println("-------------------" + value);
-                carrinho.setValue(value + produtoEscolhido.getId() + "|");
-            } else {
-                carrinho.setValue(String.valueOf(produtoEscolhido.getId()));
-            }
-        } else {
-            response.addCookie(carrinho);
-            response.getWriter().println("Id inexistente");
-        }
-        response.addCookie(carrinho);
-
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/listaProdutos");
+       RequestDispatcher dispatcher = request.getRequestDispatcher("/cliente");
         dispatcher.forward(request, response);
     }
 
