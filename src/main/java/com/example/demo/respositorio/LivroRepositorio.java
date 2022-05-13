@@ -9,6 +9,32 @@ import java.util.List;
 
 public class LivroRepositorio {
 
+    public static  void criarTabela(){
+        System.out.println("CRIANDO TABELA");
+        PreparedStatement st = null;
+        Connection conn = null;
+
+        try {
+            System.out.println("CRIANDO TABELA - TRY");
+            conn = Banco.getConnection();//CONECTANDO
+            st = conn.prepareStatement(
+                    "CREATE TABLE `livro` (\n" +
+                            "  `idlivro` int NOT NULL AUTO_INCREMENT,\n" +
+                            "  `nome` varchar(45) DEFAULT NULL,\n" +
+                            "  `autor` varchar(45) DEFAULT NULL,\n" +
+                            "  `livro` text,\n" +
+                            "  `ano` varchar(45) DEFAULT NULL,\n" +
+                            "  `numero_edicao` varchar(45) DEFAULT NULL,\n" +
+                            "  `paginas` int DEFAULT NULL,\n" +
+                            "  PRIMARY KEY (`idlivro`)\n" +
+                            ");");
+            st.executeUpdate();
+        }catch ( Exception e){
+
+        }
+
+    }
+
     public static List<Livro> buscarTodos() {
         PreparedStatement st = null;
         ResultSet rs = null;
@@ -18,7 +44,7 @@ public class LivroRepositorio {
 
             conn = Banco.getConnection();//CONECTANDO
             st = conn.prepareStatement(
-                    "SELECT * FROM produto");
+                    "SELECT * FROM livro");
             rs = st.executeQuery();
             while (rs.next()) {
                 System.out.println("--------------------------------");
@@ -47,26 +73,27 @@ public class LivroRepositorio {
     }
 
 
-    public static void inserir (String nome, String livro, String autor, String numero_edicao, String ano, Integer paginas){
+   // public static void inserir (String nome, String livro, String autor, String numero_edicao, String ano, Integer paginas){
+   public static void inserir (Livro livro){
         Connection conn = null;
         PreparedStatement statement = null;
-
-
         try {
             conn = Banco.getConnection();//CONECTANDO
 
             // EXAMPLE 1:
             statement = conn.prepareStatement(//vai receber o comando SQL e ficar preparado para executar
-                    "INSERT INTO produto "
-                            + "(nome, descricao, quantidade, preco) "
+                    "INSERT INTO livro "
+                            + "(nome, autor, livro, ano, numero_edicao, paginas)"
                             + "VALUES "
-                            + "(?, ?, ?, ?)", //4 posicoes
+                            + "(?, ?, ?, ?, ?, ?)", //4 posicoes
                     Statement.RETURN_GENERATED_KEYS);//SOBRECARGA RECEBE OUTRO PARAMETRO
 
-            statement.setString(1, nome);//tipo string, posicao 1
-            statement.setString(2, descricao);
-            statement.setInt(3, quantidade);
-            statement.setDouble(4, preco);
+            statement.setString(1, livro.getNome());//tipo string, posicao 1
+            statement.setString(2, livro.getAutor());
+            statement.setString(3, livro.getLivro());
+            statement.setString(4, livro.getAno());
+            statement.setString(5, livro.getNumero_edicao());
+            statement.setInt(6, livro.getPaginas());
             int rowsAffected = statement.executeUpdate();//executa sql e retorna um numero inteiro indicando quantas linhas foram alteradas
 
             if (rowsAffected > 0) {//SE TEVE LINHA ALTERADA
@@ -90,23 +117,25 @@ public class LivroRepositorio {
 
     }
 
-    public static Produto listarProdutosPorId(int id) {
+    public static Livro listarProdutosPorId(int id) {
         PreparedStatement st = null;
         ResultSet rs = null;
         Connection conn = null;
-        Produto obj = new Produto();
+        Livro obj = new Livro();
         try {
             conn = Banco.getConnection();//CONECTANDO
             st = conn.prepareStatement(
-                    "SELECT * FROM produto WHERE id = ?");
+                    "SELECT * FROM livro WHERE idlivro = ?");
             st.setInt(1, id);
             rs = st.executeQuery();
             if (rs.next()) {
-                obj.setId(rs.getInt("id"));
+                obj.setIdlivro(rs.getInt("idlivro"));
                 obj.setNome(rs.getString("nome"));
-                obj.setDescricao(rs.getString("descricao"));
-                obj.setQuantidade(rs.getInt("quantidade"));
-                obj.setPreco(rs.getDouble("preco"));
+                obj.setLivro(rs.getString("livro"));
+                obj.setAutor(rs.getString("autor"));
+                obj.setNumero_edicao(rs.getString("numero_edicao"));
+                obj.setAno(rs.getString("ano"));
+                obj.setPaginas(rs.getInt("paginas"));
             }
 
             return  obj;
